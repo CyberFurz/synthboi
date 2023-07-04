@@ -99,7 +99,7 @@ def massmessage():
         return jsonify(success=False,error='No message provided')
     
 # Send a direct message to a specifc local user
-@app.route('/massmessage', methods=['POST'])
+@app.route('/singlemessage', methods=['POST'])
 @authorize
 def massmessage():
     data=request.json
