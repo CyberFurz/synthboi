@@ -101,7 +101,7 @@ def massmessage():
 # Send a direct message to a specifc local user
 @app.route('/singlemessage', methods=['POST'])
 @authorize
-def massmessage():
+def singlemessage():
     data=request.json
     if 'message' in data:
         user = data['username']
