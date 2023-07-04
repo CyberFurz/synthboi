@@ -7,8 +7,8 @@ from functools import wraps
 from threading import Thread
 
 # Get Mastodon API URL and Access Token from environment variables
-MastodonToken = os.environ.get('MASTODON_API_URL')
-MastodonURL = os.environ.get('MASTODON_ACCESS_TOKEN')
+MastodonURL = os.environ.get('MASTODON_API_URL')
+MastodonToken = os.environ.get('MASTODON_ACCESS_TOKEN')
 APIKey = os.environ.get('API_KEY') # this is your custom API key for authorization
 PORT = os.environ.get('PORT', 5000)
 
