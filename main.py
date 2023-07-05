@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from time import sleep
 from waitress import serve
 from mastodon import Mastodon
@@ -10,6 +10,9 @@ from threading import Thread
 MastodonURL = os.environ.get('MASTODON_API_URL')
 MastodonToken = os.environ.get('MASTODON_ACCESS_TOKEN')
 APIKey = os.environ.get('API_KEY') # this is your custom API key for authorization
+ThreadsClientID = os.environ.get('THREADS_CLIENT_ID') # for the threads domain block
+ThreadsClientSecret = os.environ.get('THREADS_CLIENT_SECRET') # for the threads domain block
+ServerAddress = os.environ.get('SERVER_ADDRESS') # for the threads domain block
 PORT = os.environ.get('PORT', 5000)
 
 # Create Flask app
@@ -17,6 +20,9 @@ app = Flask(__name__)
 
 # Create Mastodon API instance
 mastodon = Mastodon(access_token = MastodonToken, api_base_url = MastodonURL)
+
+# For blocking threads.net custom client
+mastodon_client = Mastodon(api_base_url=MastodonURL, client_id=ThreadsClientID, client_secret=ThreadsClientSecret)
 
 # Get all active local users
 def get_all_users():
@@ -111,6 +117,29 @@ def singlemessage():
         return jsonify(success=True)
     else:
         return jsonify(success=False,error='No message provided')
+    
+
+# Block federation with Threads by meta
+@app.route('/blockthreads', methods=['GET'])
+def blockthreads():
+    testing = mastodon_client.auth_request_url(
+        client_id = ThreadsClientID,
+        redirect_uris=f'{ServerAddress}/callback',
+        scopes=['read:blocks', 'write:blocks']
+    )
+
+    return redirect(testing)
+
+# Block federation with Threads by meta callback
+@app.route('/callback', methods=['GET'])
+def blockthreadscallback():
+    if 'code' not in request.args:
+        return jsonify(success=False, error='No code provided')
+    else:
+        logged_in_client = mastodon_client.log_in(code=request.args.get('code'), redirect_uri=f'{ServerAddress}/callback', scopes=['read:blocks', 'write:blocks'] )
+        logged_in_client = Mastodon(access_token=logged_in_client, api_base_url=MastodonURL)
+        logged_in_client.domain_block(domain='threads.net')
+        return jsonify(success=True)
 
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=PORT)
