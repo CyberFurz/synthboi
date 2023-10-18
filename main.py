@@ -1,4 +1,5 @@
 import os
+from matrixSignup import *
 from flask import Flask, jsonify, request, redirect
 from time import sleep
 from waitress import serve
@@ -67,6 +68,23 @@ def authorize(f):
 @app.route('/')
 def index():
     return jsonify(message='You should not be here')
+
+#matrix signup
+@app.route('/createMatrixUser',methods=['POST'])
+@authorize
+def createMatrixUser():
+    data=request.json
+    if 'username' in data:
+        user = data['username']
+        password = data['password']
+        displayName = data['displayName']
+        creationMessage = create_user_account(user, password, displayName)
+        if creationMessage == 200:
+            return jsonify(success=True, message="User account created successfully")
+        else:
+            return jsonify(success=False, message='Failed to create user account')
+    else:
+        return jsonify(success=False,error='No username provided')
 
 # Send a message to a new user upon approval webhook
 @app.route('/newuser', methods=['POST'])
@@ -140,6 +158,7 @@ def blockthreadscallback():
         logged_in_client = Mastodon(access_token=logged_in_client, api_base_url=MastodonURL)
         logged_in_client.domain_block(domain='threads.net')
         return jsonify(success=True)
+
 
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=PORT)
