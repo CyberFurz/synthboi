@@ -1,62 +1,48 @@
 import os
 import requests
-import hashlib
-import hmac
 
 SYNAPSE_SERVER_URL = os.environ.get('SYNAPSE_SERVER_URL')  # place url in env file
-REGISTRATION_SHARED_SECRET = os.environ.get('REGISTRATION_SHARED_SECRET') # using environment var to obscure key
+ACESS_TOKEN = os.environ.get('LOGIN_ACESS_TOKEN') #needed for sending requests to the api
+AuthHeaders = { #generate header for acess
+     "Content-Type": "application/json",
+     "Authorization": f"Bearer {ACESS_TOKEN}"
+}
 
-
-def create_user_account(username, password, displayname):
+#creating user function
+def create_user_account(username: str, password: str, displayname: str, email_addr: str):
+    usrName=f"@{username}:cyberfurz.chat" #formats the username properly for put
     try:
-        nonce = fetch_nonce()  # Fetch the nonce from the API
-
-        mac = generate_mac(nonce, username, password)  # Generate the mac value
-
-        request_body = {
-            "nonce": nonce,
-            "username": username,
-            "displayname": displayname,
+        #check if the username is available
+        status = requests.get(f"{SYNAPSE_SERVER_URL}/_synapse/admin/v1/username_available?username={username}", headers=AuthHeaders)
+        if( status.status_code == 200):
+            #if availble create user json
+            request_body = {
             "password": password,
+            "logout_devices": False,
+            "displayname": displayname,
+            "avatar_url": None,
+            "threepids": [
+                {
+                    "medium": "email",
+                    "address": email_addr
+                }
+            ],
             "admin": False,
-            "mac": mac,
-        }
-
-        response = requests.post(
-            f"{SYNAPSE_SERVER_URL}/_synapse/admin/v1/register", json=request_body
-        )
-
-        # Check the response status and handle accordingly
-        return response.status_code
+            "deactivated": False,
+            "user_type": None,
+            "locked": False
+            }
+            #variable to hold response
+            callCreate = requests.put(f"{SYNAPSE_SERVER_URL}/_synapse/admin/v2/users/{usrName}", headers=AuthHeaders, json=request_body) 
+            #resposnse checking
+            if(callCreate.status_code == 201):
+                #sucess
+                 return 0
+            else:
+                 #vaild  but error occured
+                 return 1   
+        else:
+            #user name taken
+            return 2   
     except Exception as e:
         return e
-
-
-def fetch_nonce():
-    try:
-        response = requests.get(f"{SYNAPSE_SERVER_URL}/_synapse/admin/v1/register")
-        data = response.json()
-        return data["nonce"]
-    except Exception as e:
-        raise Exception("Failed to fetch nonce")
-
-
-def generate_mac(nonce, user, password, admin=False, user_type=None):
-
-    mac = hmac.new(
-      key=REGISTRATION_SHARED_SECRET,
-      digestmod=hashlib.sha1,
-    )
-
-    mac.update(nonce.encode('utf8'))
-    mac.update(b"\x00")
-    mac.update(user.encode('utf8'))
-    mac.update(b"\x00")
-    mac.update(password.encode('utf8'))
-    mac.update(b"\x00")
-    mac.update(b"admin" if admin else b"notadmin")
-    if user_type:
-        mac.update(b"\x00")
-        mac.update(user_type.encode('utf8'))
-
-    return mac.hexdigest()
