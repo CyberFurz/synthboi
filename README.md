@@ -1,10 +1,10 @@
-# Mastodon Power Toys
+# Synthboi
 
-This is a simple Flask server that helps you do some tasks for your Mastodon server
+This is a simple Flask server that helps manage various tasks
 
 ## Public Registry
 Images are published on our ECR 
-https://gallery.ecr.aws/c9a1z9d7/mastodon-power-toys
+https://gallery.ecr.aws/cyberfurz/mastodon-power-toys
 
 ## Environment Variables
 
@@ -14,3 +14,5 @@ https://gallery.ecr.aws/c9a1z9d7/mastodon-power-toys
 | MASTODON_ACCESS_TOKEN |                                      | Mastodon Access Token with Admin:Read               |
 | API_KEY               | 0178b552-0503-450b-b9b0-6fdc8680a258 | This is the Authorization header for secured routes |
 | PORT                  | 5000                                 | Port for server to run on                           |
+| SYNAPSE_SERVER_URL    | https://matrix.org                   | Replace with your homeserver url                    |
+| LOGIN_ACESS_TOKEN     | syt_XXXXXXXXXXXXXXXXXXX              | Replace with a syanpse admin access token           |
