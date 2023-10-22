@@ -2,3 +2,4 @@ flask
 waitress
 mastodon.py
 requests
+python-dotenv
