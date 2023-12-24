@@ -2,6 +2,7 @@ import os
 import re
 from matrixSignup import *
 from flask import Flask, jsonify, request, redirect
+from flask_cors import CORS, cross_origin
 from time import sleep
 from waitress import serve
 from mastodon import Mastodon
@@ -21,7 +22,9 @@ ThreadsClientSecret = os.environ.get(
     "THREADS_CLIENT_SECRET"
 )  # for the threads domain block
 ServerAddress = os.environ.get("SERVER_ADDRESS")  # for the threads domain block
+ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS").split(",")
 PORT = os.environ.get("PORT", 5000)
+
 
 # Check for valid email address
 def check_email(email):
@@ -29,6 +32,7 @@ def check_email(email):
         return True
     else:
         return False
+
 
 # Create Flask app
 app = Flask(__name__)
@@ -97,20 +101,28 @@ def index():
 
 # matrix signup
 @app.route("/createMatrixUser", methods=["POST"])
-@authorize
+@cross_origin(origins=[ALLOWED_ORIGINS])
 def createMatrixUser():
     data = request.json
     if "username" in data:
         user = data["username"]
+        acceptedTOS = data["acceptedTerms"]
         password = data["password"]
         displayName = data["displayName"]
-        creationMessage = create_user_account(user, password, displayName)
-        if creationMessage == 200:
-            return jsonify(success=True, message="User account created successfully")
+        email = data["email"]
+        if acceptedTOS == False:
+            return jsonify(success=False, error="You must accept the terms of service")
+        if check_email(email) == False:
+            return jsonify(success=False, error="Invalid email address")
+        creationMessage = create_user_account(user, password, displayName, email)
+        if creationMessage == 0:
+            return jsonify(success=True, message="User account created sucessfully")
+        elif creationMessage == 1:
+            return jsonify(success=False, error="There was an error creating the User")
         else:
-            return jsonify(success=False, message="Failed to create user account")
+            return jsonify(success=False, error="The user name is taken")
     else:
-        return jsonify(success=False, error="No username provided")
+        return jsonify(success=False, error="There was an error")
 
 
 # Send a message to a new user upon approval webhook
