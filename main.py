@@ -2,7 +2,7 @@ import os
 import re
 from matrixSignup import *
 from flask import Flask, jsonify, request, redirect
-from flask_cors import CORS, cross_origin
+from flask_cors import cross_origin
 from time import sleep
 from waitress import serve
 from mastodon import Mastodon
