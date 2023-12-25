@@ -106,7 +106,7 @@ def createMatrixUser():
     data = request.json
     if "username" in data:
         user = data["username"]
-        acceptedTOS = data["acceptedTerms"]
+        acceptedTOS = data["termsAccepted"]
         password = data["password"]
         displayName = data["displayName"]
         email = data["email"]
