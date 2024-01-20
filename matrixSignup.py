@@ -30,14 +30,12 @@ def create_user_account(
             # if availble create user json
             request_body = {
                 "password": password,
-                "logout_devices": False,
+                "logout_devices": false,
                 "displayname": displayname,
-                "avatar_url": None,
                 "threepids": [{"medium": "email", "address": email_addr}],
-                "admin": False,
-                "deactivated": False,
-                "user_type": None,
-                "locked": False,
+                "admin": false,
+                "deactivated": false,
+                "locked": false,
             }
             # variable to hold response
             callCreate = requests.put(
