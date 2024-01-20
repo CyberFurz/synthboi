@@ -35,7 +35,7 @@ def create_user_account(
                 "threepids": [{"medium": "email", "address": email_addr}],
                 "admin": false,
                 "deactivated": false,
-                "locked": false,
+                "locked": false
             }
             # variable to hold response
             callCreate = requests.put(
