@@ -26,16 +26,16 @@ def create_user_account(
             headers=AuthHeaders,
         )
         regstatus = status.json()
-        if regstatus["errcode"] != "M_USER_IN_USE":
-            # if availble create user json
+        if regstatus["available"]:
+            print("user name available")
             request_body = {
                 "password": password,
-                "logout_devices": false,
+                "logout_devices": False,
                 "displayname": displayname,
                 "threepids": [{"medium": "email", "address": email_addr}],
-                "admin": false,
-                "deactivated": false,
-                "locked": false
+                "admin": False,
+                "deactivated": False,
+                "locked": False,
             }
             # variable to hold response
             callCreate = requests.put(
