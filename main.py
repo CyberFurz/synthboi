@@ -242,7 +242,7 @@ def blockspamcallback():
                 phrase=tag,
                 irreversible=False,
                 whole_word=True,
-                expires_at=None,
+                expires_in=None,
             )
         return jsonify(success=True)
 
