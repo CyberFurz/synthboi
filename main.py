@@ -191,6 +191,16 @@ def blockthreads():
     return redirect(testing)
 
 
+# Block spam tags
+@app.route("/blockspam", methods=["GET"])
+def blockspam():
+    flowstate = mastodon_client.auth_request_url(
+        client_id=ThreadsClientID,
+        redirect_uris=f"{ServerAddress}/callback-spam",
+        scopes=["read:filters", "write:filters"],
+    )
+
+
 # Block federation with Threads by meta callback
 @app.route("/callback", methods=["GET"])
 def blockthreadscallback():
@@ -206,6 +216,32 @@ def blockthreadscallback():
             access_token=logged_in_client, api_base_url=MastodonURL
         )
         logged_in_client.domain_block(domain="threads.net")
+        return jsonify(success=True)
+
+
+# Block spam tags callback
+@app.route("/callback-spam", methods=["GET"])
+def blockspamcallback():
+    if "code" not in request.args:
+        return jsonify(success=False, error="No code provided")
+    else:
+        spam_tags = ["#診断メーカー"]
+        logged_in_client = mastodon_client.log_in(
+            code=request.args.get("code"),
+            redirect_uri=f"{ServerAddress}/callback-spam",
+            scopes=["read:filters", "write:filters"],
+        )
+        logged_in_client = Mastodon(
+            access_token=logged_in_client, api_base_url=MastodonURL
+        )
+        for tag in spam_tags:
+            logged_in_client.filter_create(
+                context=["home", "notifications", "public", "thread"],
+                phrase=tag,
+                irreversible=False,
+                whole_word=True,
+                expires_at=None,
+            )
         return jsonify(success=True)
 
 
