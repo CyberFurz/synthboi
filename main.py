@@ -200,6 +200,8 @@ def blockspam():
         scopes=["read:filters", "write:filters"],
     )
 
+    return redirect(flowstate)
+
 
 # Block federation with Threads by meta callback
 @app.route("/callback", methods=["GET"])
